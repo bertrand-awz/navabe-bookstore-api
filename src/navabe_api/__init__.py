@@ -1,9 +1,12 @@
-from __future__ import annotations
-
 from flask import Flask
 from flask_cors import CORS
 
-from navabe_api.application.services import AdminService, CatalogService, IdentityService, OrderService
+from navabe_api.application.services import (
+    AdminService,
+    CatalogService,
+    IdentityService,
+    OrderService,
+)
 from navabe_api.config import settings
 from navabe_api.infrastructure.mailers import LoggingMailer, SmtpMailer
 from navabe_api.infrastructure.memory_repository import MemoryRepository
@@ -37,16 +40,24 @@ def create_app(config: dict | None = None, repository=None, mailer=None) -> Flas
 
 
 def _repository(config: dict):
-    return MemoryRepository() if config["DATABASE_BACKEND"] == "memory" else MySqlRepository(config["MYSQL"])
+    return (
+        MemoryRepository()
+        if config["DATABASE_BACKEND"] == "memory"
+        else MySqlRepository(config["MYSQL"])
+    )
 
 
 def _mailer(config: dict):
     if not config["MAIL_ENABLED"]:
         return LoggingMailer()
+    if bool(config["SMTP_USER"]) != bool(config["SMTP_PASSWORD"]):
+        raise RuntimeError("SMTP_USER and SMTP_PASSWORD must both be set or both be empty")
     return SmtpMailer(
         config["SMTP_HOST"],
         config["SMTP_PORT"],
         config["SMTP_USER"],
         config["SMTP_PASSWORD"],
         config["SMTP_SENDER"],
+        config["SMTP_TIMEOUT"],
+        config["SMTP_SECURITY"],
     )

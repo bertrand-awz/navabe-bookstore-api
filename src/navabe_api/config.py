@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import os
 
 
@@ -17,9 +15,11 @@ def settings() -> dict:
             "password": os.getenv("MYSQL_PASSWORD", ""),
         },
         "MAIL_ENABLED": os.getenv("MAIL_ENABLED", "false").lower() == "true",
-        "SMTP_HOST": os.getenv("SMTP_HOST", "smtp.gmail.com"),
+        "SMTP_HOST": os.getenv("SMTP_HOST", "smtp.resend.com"),
         "SMTP_PORT": int(os.getenv("SMTP_PORT", "465")),
-        "SMTP_USER": os.getenv("SMTP_USER", ""),
-        "SMTP_PASSWORD": os.getenv("SMTP_PASSWORD", ""),
-        "SMTP_SENDER": os.getenv("SMTP_SENDER", "Navabe Team"),
+        "SMTP_USER": os.getenv("SMTP_USER", "resend"),
+        "SMTP_PASSWORD": os.getenv("SMTP_PASSWORD") or os.getenv("RESEND_API_KEY", ""),
+        "SMTP_SENDER": os.getenv("SMTP_SENDER", "Navabe <no-reply@mail.navabe.bertawz.dev>"),
+        "SMTP_SECURITY": os.getenv("SMTP_SECURITY", "ssl").lower(),
+        "SMTP_TIMEOUT": float(os.getenv("SMTP_TIMEOUT", "10")),
     }

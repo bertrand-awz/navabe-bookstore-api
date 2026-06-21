@@ -34,7 +34,15 @@ Set `DATABASE_BACKEND=memory` to explore the API without MySQL. Production
 data access uses the MySQL adapter configured by the `MYSQL_*` variables.
 Use `data/schema.sql` for a new database or `data/migration_v2.sql` before
 connecting an existing Navabe database.
-Email delivery is disabled by default; enable it only after configuring `SMTP_*`.
+In development, Compose routes every email to MailHog over local SMTP. Open
+`http://localhost:8025` to inspect captured messages; none are delivered to real
+recipients. A local process can use the same server with the values from
+`.env.example`.
+
+Production uses Resend over implicit TLS (`smtp.resend.com:465`). Copy
+`.env.production.example` into the deployment secret configuration, verify
+`mail.navabe.bertawz.dev` in Resend, and provide `RESEND_API_KEY`. Never use the
+Resend key in the development Compose environment.
 
 The backend image is defined in `Dockerfile`; its application process only
 starts after Compose reports the database migration as successful. Build the
