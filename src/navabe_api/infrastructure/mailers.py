@@ -5,7 +5,7 @@ from email.message import EmailMessage
 
 
 class LoggingMailer:
-    def send(self, recipient: str, subject: str, body: str) -> None:
+    def send(self, recipient: str, subject: str, body: str, html: str | None = None) -> None:
         logging.getLogger(__name__).info(
             "Email disabled: recipient=%s subject=%s", recipient, subject
         )
@@ -32,12 +32,14 @@ class SmtpMailer:
         self.timeout = timeout
         self.security = security
 
-    def send(self, recipient: str, subject: str, body: str) -> None:
+    def send(self, recipient: str, subject: str, body: str, html: str | None = None) -> None:
         message = EmailMessage()
         message["From"] = self.sender
         message["To"] = recipient
         message["Subject"] = subject
         message.set_content(body)
+        if html:
+            message.add_alternative(html, subtype="html")
         connection = smtplib.SMTP_SSL if self.security == "ssl" else smtplib.SMTP
         with connection(self.host, self.port, timeout=self.timeout) as server:
             if self.security == "starttls":

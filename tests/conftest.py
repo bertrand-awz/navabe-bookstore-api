@@ -12,8 +12,8 @@ class SpyMailer:
     def __init__(self):
         self.messages = []
 
-    def send(self, recipient: str, subject: str, body: str) -> None:
-        self.messages.append((recipient, subject, body))
+    def send(self, recipient: str, subject: str, body: str, html: str | None = None) -> None:
+        self.messages.append((recipient, subject, body, html))
 
 
 @pytest.fixture

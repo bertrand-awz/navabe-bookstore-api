@@ -20,7 +20,7 @@ def test_smtp_mailer_uses_resend_credentials_and_timeout():
             465,
             "resend",
             "re_test_key",
-            "Navabe <no-reply@mail.navabe.bertawz.dev>",
+            "Navabe Bookstore <no-reply@mail.navabe.bertawz.dev>",
             8,
             "ssl",
         ).send("reader@example.com", "Welcome", "Hello")
@@ -28,7 +28,7 @@ def test_smtp_mailer_uses_resend_credentials_and_timeout():
     smtp_ssl.assert_called_once_with("smtp.resend.com", 465, timeout=8)
     connection.login.assert_called_once_with("resend", "re_test_key")
     message = connection.send_message.call_args.args[0]
-    assert message["From"] == "Navabe <no-reply@mail.navabe.bertawz.dev>"
+    assert message["From"] == "Navabe Bookstore <no-reply@mail.navabe.bertawz.dev>"
     assert message["To"] == "reader@example.com"
 
 
@@ -66,7 +66,7 @@ def test_smtp_mailer_sends_to_mailhog_without_tls_or_authentication():
             1025,
             "",
             "",
-            "Navabe Dev <no-reply@navabe.local>",
+            "Navabe Bookstore <no-reply@navabe.local>",
             5,
             "none",
         ).send("reader@example.com", "Welcome", "Hello")
@@ -75,3 +75,25 @@ def test_smtp_mailer_sends_to_mailhog_without_tls_or_authentication():
     connection.starttls.assert_not_called()
     connection.login.assert_not_called()
     connection.send_message.assert_called_once()
+
+
+def test_smtp_mailer_adds_html_alternative():
+    connection = MagicMock()
+    context = MagicMock()
+    context.__enter__.return_value = connection
+
+    with patch("navabe_api.infrastructure.mailers.smtplib.SMTP", return_value=context):
+        SmtpMailer(
+            "mailhog",
+            1025,
+            "",
+            "",
+            "Navabe Bookstore <no-reply@navabe.local>",
+            5,
+            "none",
+        ).send("reader@example.com", "Welcome", "Plain version", "<p>HTML version</p>")
+
+    message = connection.send_message.call_args.args[0]
+    assert message.get_content_type() == "multipart/alternative"
+    assert message.get_body(("plain",)).get_content().strip() == "Plain version"
+    assert "<p>HTML version</p>" in message.get_body(("html",)).get_content()

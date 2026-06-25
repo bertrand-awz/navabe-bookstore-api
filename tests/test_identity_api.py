@@ -14,6 +14,8 @@ def test_registers_user_and_opens_session(client, mailer):
     assert response.json["identifier"] == "ALSM0002"
     assert client.get("/api/v1/auth/me").json["email"] == "alice@example.com"
     assert mailer.messages[0][0] == "alice@example.com"
+    assert mailer.messages[0][3]
+    assert "Customer identifier" in mailer.messages[0][3]
 
 
 def test_rejects_invalid_credentials(client):

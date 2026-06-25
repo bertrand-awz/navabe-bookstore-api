@@ -39,10 +39,11 @@ In development, Compose routes every email to MailHog over local SMTP. Open
 recipients. A local process can use the same server with the values from
 `.env.example`.
 
-Production uses Resend over implicit TLS (`smtp.resend.com:465`). Copy
-`.env.production.example` into the deployment secret configuration, verify
-`mail.navabe.bertawz.dev` in Resend, and provide `RESEND_API_KEY`. Never use the
-Resend key in the development Compose environment.
+The public demonstration also uses MailHog so that it never delivers messages
+to real recipients. Its HTTPS interface is protected with HTTP authentication
+by the host Nginx configuration because recovery messages contain temporary
+passwords. Copy `.env.production.example` only when running the backend outside
+the root production Compose stack.
 
 The backend image is defined in `Dockerfile`; its application process only
 starts after Compose reports the database migration as successful. Build the
@@ -51,6 +52,9 @@ starts after Compose reports the database migration as successful. Build the
 ```bash
 docker build --target runtime -t navabe-backend .
 ```
+
+That stage runs two Gunicorn workers and does not include development
+dependencies or mount the source tree.
 
 Changes to `pyproject.toml` or `poetry.lock` require rebuilding the development
 image with `./run.sh up`.

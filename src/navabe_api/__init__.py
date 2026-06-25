@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect
 from flask_cors import CORS
 
 from navabe_api.application.services import (
@@ -7,7 +7,7 @@ from navabe_api.application.services import (
     IdentityService,
     OrderService,
 )
-from navabe_api.config import settings
+from navabe_api.config import settings, validate_settings
 from navabe_api.infrastructure.mailers import LoggingMailer, SmtpMailer
 from navabe_api.infrastructure.memory_repository import MemoryRepository
 from navabe_api.infrastructure.mysql_repository import MySqlRepository
@@ -19,8 +19,9 @@ def create_app(config: dict | None = None, repository=None, mailer=None) -> Flas
     app.config.update(settings())
     if config:
         app.config.update(config)
+    validate_settings(app.config)
     app.config.update(
-        ERROR_404_HELP=False,
+        RESTX_ERROR_404_HELP=False,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         SESSION_COOKIE_SECURE=app.config["COOKIE_SECURE"],
@@ -36,6 +37,11 @@ def create_app(config: dict | None = None, repository=None, mailer=None) -> Flas
         "admin": AdminService(repository, mailer),
     }
     configure_api(app)
+
+    @app.get("/")
+    def api_documentation():
+        return redirect("/docs", code=302)
+
     return app
 
 

@@ -1,6 +1,13 @@
 
 from decimal import Decimal, InvalidOperation
 
+from navabe_api.application.email_templates import (
+    admin_recovery_email,
+    admin_welcome_email,
+    customer_password_changed_email,
+    customer_recovery_email,
+    customer_welcome_email,
+)
 from navabe_api.application.security import hash_password, password_matches, temporary_password
 from navabe_api.domain.exceptions import (
     AuthenticationError,
@@ -73,11 +80,8 @@ class IdentityService:
             )
         except ConflictError:
             raise
-        self.mailer.send(
-            user.email,
-            "Welcome to Navabe",
-            f"Hello {user.first_name},\n\nYour Navabe identifier is {user.identifier}.",
-        )
+        email = customer_welcome_email(user)
+        self.mailer.send(user.email, email.subject, email.text, email.html)
         return user
 
     def login(self, email: str, password: str) -> User:
@@ -98,17 +102,15 @@ class IdentityService:
         user = self.get_user(identifier)
         if not self.repository.update_user_password(identifier, hash_password(new_password)):
             raise NotFoundError("User not found", "user_not_found")
-        self.mailer.send(user.email, "Navabe password changed", f"Hello {user.first_name},\n\nYour password was changed.")
+        email = customer_password_changed_email(user)
+        self.mailer.send(user.email, email.subject, email.text, email.html)
 
     def recover(self, identifier: str) -> None:
         user = self.get_user(identifier)
         password = temporary_password()
         self.repository.update_user_password(identifier, hash_password(password))
-        self.mailer.send(
-            user.email,
-            "Navabe account recovery",
-            f"Hello {user.first_name},\n\nYour temporary password is: {password}",
-        )
+        email = customer_recovery_email(user, password)
+        self.mailer.send(user.email, email.subject, email.text, email.html)
 
 
 class OrderService:
@@ -164,11 +166,8 @@ class AdminService:
             payload["email"].strip().lower(),
             hash_password(password),
         )
-        self.mailer.send(
-            admin.email,
-            "Welcome to the Navabe Management Portal",
-            f"Your manager ID is {admin.identifier} and your temporary password is {password}.",
-        )
+        email = admin_welcome_email(admin, password)
+        self.mailer.send(admin.email, email.subject, email.text, email.html)
         return admin
 
     def recover(self, identifier: str) -> None:
@@ -178,7 +177,8 @@ class AdminService:
         admin = result[0]
         password = temporary_password()
         self.repository.update_admin_password(identifier, hash_password(password))
-        self.mailer.send(admin.email, "Navabe management account recovery", f"Your temporary password is {password}.")
+        email = admin_recovery_email(admin, password)
+        self.mailer.send(admin.email, email.subject, email.text, email.html)
 
     def upsert_book(self, payload: dict) -> Book:
         required = ("isbn", "title", "author", "price")
