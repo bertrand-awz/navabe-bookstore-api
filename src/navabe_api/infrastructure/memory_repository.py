@@ -87,15 +87,19 @@ class MemoryRepository:
         if any(admin.email == email for admin, _ in self.admins.values()):
             raise ConflictError("Email already registered", "email_exists")
         suffix = "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(4))
-        admin = Admin(f"{name[0]}{first_name[0]}{suffix}".upper(), name, first_name, email)
+        admin = Admin(f"{name[0]}{first_name[0]}{suffix}".upper(), name, first_name, email, True)
         self.admins[admin.identifier] = (admin, password_hash)
         return admin
 
-    def update_admin_password(self, identifier: str, password_hash: str) -> bool:
+    def update_admin_password(self, identifier: str, password_hash: str, temporary: bool = False) -> bool:
         record = self.admins.get(identifier)
         if not record:
             return False
-        self.admins[identifier] = (record[0], password_hash)
+        admin = record[0]
+        self.admins[identifier] = (
+            Admin(admin.identifier, admin.name, admin.first_name, admin.email, temporary),
+            password_hash,
+        )
         return True
 
     def upsert_book(self, book: Book, quantity: int) -> Book:

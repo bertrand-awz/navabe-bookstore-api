@@ -50,6 +50,20 @@ def admin_required(function):
     def wrapper(*args, **kwargs):
         if not session.get("admin_id"):
             raise AuthorizationError("Management session required", "admin_session_required")
+        if session.get("admin_must_change_password"):
+            raise AuthorizationError(
+                "Management password change required",
+                "admin_password_change_required",
+            )
+        return function(*args, **kwargs)
+    return wrapper
+
+
+def admin_session_required(function):
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        if not session.get("admin_id"):
+            raise AuthorizationError("Management session required", "admin_session_required")
         return function(*args, **kwargs)
     return wrapper
 
@@ -265,20 +279,35 @@ def _register_models_and_namespaces(api: Api) -> None:
             administrator = services()["admin"].login(payload()["identifier"], payload()["password"])
             session.clear()
             session["admin_id"] = administrator.identifier
+            session["admin_must_change_password"] = administrator.must_change_password
             return administrator.to_dict()
 
     @admin.route("/auth/session")
     class AdminSession(Resource):
         def get(self):
             """Report the active administrator session."""
-            return {"authenticated": bool(session.get("admin_id")), "identifier": session.get("admin_id")}
+            return {
+                "authenticated": bool(session.get("admin_id")),
+                "identifier": session.get("admin_id"),
+                "must_change_password": bool(session.get("admin_must_change_password")),
+            }
 
     @admin.route("/auth/logout")
     class AdminLogout(Resource):
-        @admin_required
+        @admin_session_required
         def post(self):
             """Close the current administrator session."""
             session.clear()
+            return "", 204
+
+    @admin.route("/auth/password")
+    class AdminPassword(Resource):
+        @admin_session_required
+        @admin.expect(password_model, validate=True)
+        def patch(self):
+            """Change the current manager password."""
+            services()["admin"].change_password(session["admin_id"], payload()["password"])
+            session["admin_must_change_password"] = False
             return "", 204
 
     @admin.route("/auth/recovery")

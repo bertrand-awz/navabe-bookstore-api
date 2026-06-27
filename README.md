@@ -15,7 +15,9 @@ The Compose stack waits for MySQL's health check and executes
 API starts. A fresh MySQL volume is initialized from `data/schema.sql`, imports
 `data/NVB.csv`, and creates inventory records. Applied migrations are tracked in
 the `schema_migrations` table. The root `run.sh up` command recreates the
-one-shot migration task on every scripted start. Compose builds the
+one-shot migration task on every scripted start. That task also ensures the
+default manager account `RTMGM1` exists with the email
+`root.manager@test.navabe.bertawz.dev`. Compose builds the
 `development` Docker stage and mounts `src` into the container; Flask's debug
 reloader automatically restarts the API after a source-code change.
 

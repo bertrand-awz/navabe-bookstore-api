@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS Administrateur (
   prenom VARCHAR(45) NOT NULL,
   mail VARCHAR(255) NOT NULL,
   mot_de_passe VARCHAR(255) NOT NULL,
+  mot_de_passe_temporaire BOOLEAN NOT NULL DEFAULT FALSE,
   PRIMARY KEY (adminID),
   UNIQUE KEY uq_administrateur_mail (mail)
 );

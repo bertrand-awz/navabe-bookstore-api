@@ -66,6 +66,7 @@ class Admin:
     name: str
     first_name: str
     email: str
+    must_change_password: bool = False
 
     def to_dict(self) -> dict:
         return asdict(self)

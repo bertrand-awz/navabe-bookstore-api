@@ -2,6 +2,7 @@
 from decimal import Decimal, InvalidOperation
 
 from navabe_api.application.email_templates import (
+    admin_password_changed_email,
     admin_recovery_email,
     admin_welcome_email,
     customer_password_changed_email,
@@ -170,13 +171,27 @@ class AdminService:
         self.mailer.send(admin.email, email.subject, email.text, email.html)
         return admin
 
+    def change_password(self, identifier: str, new_password: str) -> None:
+        if len(new_password) < 6:
+            raise ValidationError("Password must contain at least 6 characters", "weak_password")
+        result = self.repository.get_admin_by_id(identifier)
+        if not result:
+            raise NotFoundError("Management account not found", "admin_not_found")
+        admin = result[0]
+        if password_matches(result[1], new_password):
+            raise ValidationError("New password must be different from the temporary password", "password_unchanged")
+        if not self.repository.update_admin_password(identifier, hash_password(new_password), False):
+            raise NotFoundError("Management account not found", "admin_not_found")
+        email = admin_password_changed_email(admin)
+        self.mailer.send(admin.email, email.subject, email.text, email.html)
+
     def recover(self, identifier: str) -> None:
         result = self.repository.get_admin_by_id(identifier)
         if not result:
             raise NotFoundError("Management account not found", "admin_not_found")
         admin = result[0]
         password = temporary_password()
-        self.repository.update_admin_password(identifier, hash_password(password))
+        self.repository.update_admin_password(identifier, hash_password(password), True)
         email = admin_recovery_email(admin, password)
         self.mailer.send(admin.email, email.subject, email.text, email.html)
 

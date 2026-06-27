@@ -159,29 +159,51 @@ class MySqlRepository:
     def get_admin_by_id(self, identifier: str) -> tuple[Admin, str] | None:
         with self._cursor() as cursor:
             cursor.execute(
-                "SELECT adminID, nom, prenom, mail, mot_de_passe FROM Administrateur WHERE adminID=%s",
+                """
+                SELECT adminID, nom, prenom, mail, mot_de_passe, mot_de_passe_temporaire
+                FROM Administrateur WHERE adminID=%s
+                """,
                 (identifier,),
             )
             row = cursor.fetchone()
             if not row:
                 return None
-            return Admin(row["adminID"], row["nom"], row["prenom"], row["mail"]), row["mot_de_passe"]
+            return (
+                Admin(
+                    row["adminID"],
+                    row["nom"],
+                    row["prenom"],
+                    row["mail"],
+                    bool(row["mot_de_passe_temporaire"]),
+                ),
+                row["mot_de_passe"],
+            )
 
     def create_admin(self, name: str, first_name: str, email: str, password_hash: str) -> Admin:
         identifier = (name[0] + first_name[0] + "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(4))).upper()
         try:
             with self._cursor(commit=True) as cursor:
                 cursor.execute(
-                    "INSERT INTO Administrateur(adminID,nom,prenom,mail,mot_de_passe) VALUES (%s,%s,%s,%s,%s)",
+                    """
+                    INSERT INTO Administrateur(adminID,nom,prenom,mail,mot_de_passe,mot_de_passe_temporaire)
+                    VALUES (%s,%s,%s,%s,%s,TRUE)
+                    """,
                     (identifier, name, first_name, email, password_hash),
                 )
         except IntegrityError as error:
             raise ConflictError("Email already registered", "email_exists") from error
-        return Admin(identifier, name, first_name, email)
+        return Admin(identifier, name, first_name, email, True)
 
-    def update_admin_password(self, identifier: str, password_hash: str) -> bool:
+    def update_admin_password(self, identifier: str, password_hash: str, temporary: bool = False) -> bool:
         with self._cursor(commit=True) as cursor:
-            cursor.execute("UPDATE Administrateur SET mot_de_passe=%s WHERE adminID=%s", (password_hash, identifier))
+            cursor.execute(
+                """
+                UPDATE Administrateur
+                SET mot_de_passe=%s, mot_de_passe_temporaire=%s
+                WHERE adminID=%s
+                """,
+                (password_hash, temporary, identifier),
+            )
             return cursor.rowcount == 1
 
     def upsert_book(self, book: Book, quantity: int) -> Book:
