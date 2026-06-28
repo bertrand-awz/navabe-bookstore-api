@@ -13,7 +13,7 @@ def configure_api(app) -> Api:
         title="Navabe Bookstore API",
         description="REST API for Navabe's catalog, customer accounts, orders and administration.",
         prefix="/api/v1",
-        doc="/swagger",
+        doc="/docs",
         contact="Navabe Team",
         license="Educational project",
         security="sessionCookie",

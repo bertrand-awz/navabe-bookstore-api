@@ -10,7 +10,21 @@ def test_root_redirects_to_api_documentation(client):
     response = client.get("/")
 
     assert response.status_code == 302
-    assert response.headers["Location"] == "/swagger"
+    assert response.headers["Location"] == "/docs"
+
+
+def test_legacy_swagger_path_redirects_to_api_documentation(client):
+    response = client.get("/swagger")
+
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/docs"
+
+
+def test_api_documentation_is_available_at_docs(client):
+    response = client.get("/docs")
+
+    assert response.status_code == 200
+    assert b"Navabe Bookstore API" in response.data
 
 
 def test_production_rejects_placeholder_secret(repository, mailer):
