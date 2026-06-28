@@ -75,16 +75,16 @@ VALUES (
   'RootManager',
   'RootManager',
   'root.manager@test.navabe.bertawz.dev',
-  'scrypt:32768:8:1$hC4Hl70ZeamtPNAU$33861e3b8c1973f5a946bb1527c104eb9004ccfe06a25cd584d7a693248733514fbb7b36b653bd24926cf4599fc266ac7c93cc3ead3e5e6ba54c871d78556d6c',
-  TRUE
+  'scrypt:32768:8:1$8lcfK2LFsZSl39zy$7e850d9368b4117f6d049bdceea04628b250d986b10344509a4f06aa84e3bc0d1df2caf3c9be6bd1b159099fd92dae1b505869e60430ab0f25151aec535570b5',
+  FALSE
 )
 ON DUPLICATE KEY UPDATE
   adminID = 'RTMGM1',
   nom = 'RootManager',
   prenom = 'RootManager',
   mail = 'root.manager@test.navabe.bertawz.dev',
-  mot_de_passe = 'scrypt:32768:8:1$hC4Hl70ZeamtPNAU$33861e3b8c1973f5a946bb1527c104eb9004ccfe06a25cd584d7a693248733514fbb7b36b653bd24926cf4599fc266ac7c93cc3ead3e5e6ba54c871d78556d6c',
-  mot_de_passe_temporaire = TRUE;
+  mot_de_passe = 'scrypt:32768:8:1$8lcfK2LFsZSl39zy$7e850d9368b4117f6d049bdceea04628b250d986b10344509a4f06aa84e3bc0d1df2caf3c9be6bd1b159099fd92dae1b505869e60430ab0f25151aec535570b5',
+  mot_de_passe_temporaire = FALSE;
 SQL
 
 echo "Default RootManager account is ready."
