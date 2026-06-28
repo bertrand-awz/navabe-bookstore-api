@@ -40,7 +40,7 @@ def create_app(config: dict | None = None, repository=None, mailer=None) -> Flas
 
     @app.get("/")
     def api_documentation():
-        return redirect("/docs", code=302)
+        return redirect("/swagger", code=302)
 
     return app
 

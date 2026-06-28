@@ -47,7 +47,15 @@ def validate_settings(config: dict) -> None:
         raise RuntimeError("COOKIE_SECURE must be true in production")
     if not config["FRONTEND_ORIGIN"].startswith("https://"):
         raise RuntimeError("FRONTEND_ORIGIN must use HTTPS in production")
+    if _is_local_url(config["FRONTEND_ORIGIN"]):
+        raise RuntimeError("FRONTEND_ORIGIN must not point to localhost in production")
+    if "/" in config["FRONTEND_ORIGIN"].removeprefix("https://"):
+        raise RuntimeError("FRONTEND_ORIGIN must be an origin without a path in production")
     if config["DATABASE_BACKEND"] == "mysql":
         password = config["MYSQL"]["password"]
         if not password or password.startswith("replace-"):
             raise RuntimeError("MYSQL_PASSWORD must be set to a non-placeholder value in production")
+
+
+def _is_local_url(value: str) -> bool:
+    return any(host in value for host in ("localhost", "127.0.0.1", "0.0.0.0", "[::1]"))

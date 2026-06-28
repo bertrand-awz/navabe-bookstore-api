@@ -30,7 +30,7 @@ poetry run navabe-api
 ```
 
 The API listens on `http://localhost:5000`. Interactive Swagger documentation is
-available at `http://localhost:5000/docs`.
+available at `http://localhost:5000/swagger`.
 
 Set `DATABASE_BACKEND=memory` to explore the API without MySQL. Production
 data access uses the MySQL adapter configured by the `MYSQL_*` variables.

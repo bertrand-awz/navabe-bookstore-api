@@ -10,7 +10,7 @@ def test_root_redirects_to_api_documentation(client):
     response = client.get("/")
 
     assert response.status_code == 302
-    assert response.headers["Location"] == "/docs"
+    assert response.headers["Location"] == "/swagger"
 
 
 def test_production_rejects_placeholder_secret(repository, mailer):
@@ -21,6 +21,21 @@ def test_production_rejects_placeholder_secret(repository, mailer):
                 "SECRET_KEY": "replace-with-at-least-32-random-characters",
                 "COOKIE_SECURE": True,
                 "FRONTEND_ORIGIN": "https://navabe.bertawz.dev",
+            },
+            repository=repository,
+            mailer=mailer,
+        )
+
+
+def test_production_rejects_local_frontend_origin(repository, mailer):
+    with pytest.raises(RuntimeError, match="FRONTEND_ORIGIN must not point to localhost"):
+        create_app(
+            {
+                "APP_ENV": "production",
+                "SECRET_KEY": "a" * 32,
+                "COOKIE_SECURE": True,
+                "FRONTEND_ORIGIN": "https://localhost:5173",
+                "MYSQL": {"password": "production-password"},
             },
             repository=repository,
             mailer=mailer,
