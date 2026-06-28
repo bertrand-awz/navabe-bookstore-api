@@ -234,7 +234,7 @@ def _layout(
             </tr>
             <tr>
               <td style="background:{FOOTER_COLOR};border-top:1px solid {FOOTER_BORDER_COLOR};padding:18px 28px;text-align:right;">
-                <p style="margin:0;color:{FOOTER_TEXT_COLOR};font-size:13px;line-height:1.5;">Navabe Bookstore<br>Catalog, customer accounts and management portal</p>
+                <p style="margin:0;color:{FOOTER_TEXT_COLOR};font-size:13px;line-height:1.5;">Navabe Bookstore</p>
               </td>
             </tr>
           </table>

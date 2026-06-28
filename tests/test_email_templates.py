@@ -37,6 +37,7 @@ def test_all_application_emails_render_text_and_html_templates():
         assert f"background:{PAPER_COLOR};border-bottom:1px solid {LINE_COLOR}" in email.html
         assert f"background:{FOOTER_COLOR}" in email.html
         assert f"color:{FOOTER_TEXT_COLOR}" in email.html
+        assert "Catalog, customer accounts and management portal" not in email.html
 
 
 def test_email_templates_escape_dynamic_html_values():
